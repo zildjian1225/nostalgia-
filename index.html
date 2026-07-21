@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>AI pixel night · cyberpunk benchmark</title>
+  <style>
+    /* ---------- RESET & FULLSCREEN CANVAS ---------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0a0c14;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      font-family: 'Courier New', monospace;
+    }
+
+    canvas {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      image-rendering: crisp-edges; /* pixel-perfect sharpness */
+    }
+
+    /* subtle overlay for extra atmosphere (soft vignette) */
+    .vignette {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background: radial-gradient(circle at center, transparent 60%, rgba(4, 8, 20, 0.65) 100%);
+      z-index: 2;
+    }
+
+    /* minimal UI hint (optional) */
+    .benchmark-tag {
+      position: fixed;
+      bottom: 18px;
+      right: 22px;
+      color: rgba(180, 220, 255, 0.9);
+      font-size: clamp(0.8rem, 2.5vw, 1rem);
+      letter-spacing: 0.2em;
+      text-shadow: 0 0 12px #00a6ff;
+      background: rgba(8, 15, 28, 0.7);
+      backdrop-filter: blur(8px);
+      padding: 0.4rem 1.4rem;
+      border-radius: 40px;
+      border: 1px solid #2dd4bf;
+      z-index: 3;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="pixelCityCanvas" aria-label="Retro pixel city night with train and cyberpunk glow"></canvas>
+  <div class="vignette"></div>
+  <div class="benchmark-tag">⚡ AI PIXEL BENCHMARK</div>
+
+  <script>
+    (function() {
+      // ==========================================
+      // CANVAS SETUP & GLOBAL VARIABLES
+      // ==========================================
+      const canvas = document.getElementById('pixelCityCanvas');
+      const ctx = canvas.getContext('2d');
+
+      // Pixel-perfect scaling: we use a fixed internal resolution and scale up.
+      const INTERNAL_WIDTH = 480;
+      const INTERNAL_HEIGHT = 270;
+
+      // Animation state
+      let animationFrameId = null;
+      let lastTimestamp = 0;
+      let frameCount = 0;
+
+      // --- city generation data (procedural) ---
+      let buildings = [];
+      let windows = [];            // { buildingIdx, col, row, baseOn, phase, speed }
+      let stars = [];
+      let shootingStars = [];
+
+      // train properties
+      let trainX = 0.0;           // normalized position (0 to 1)
+      const TRAIN_SPEED = 0.08;   // per second
+      const TRAIN_Y_BASE = 0.735; // relative to internal height (water line area)
+
+      // water & atmosphere
+      let waterPhase = 0;
+      let fogOffset = 0;
+
+      // ==========================================
+      // RESIZE & RESPONSIVENESS
+      // ==========================================
+      function resizeCanvas() {
+        const containerWidth = window.innerWidth;
+        const containerHeight = window.innerHeight;
+
+        // maintain aspect ratio 16:9 (480x270)
+        let displayWidth, displayHeight;
+        const aspect = INTERNAL_WIDTH / INTERNAL_HEIGHT;
+
+        if (containerWidth / containerHeight > aspect) {
+          displayHeight = containerHeight;
+          displayWidth = displayHeight * aspect;
+        } else {
+          displayWidth = containerWidth;
+          displayHeight = displayWidth / aspect;
+        }
+
+        canvas.style.width = `${displayWidth}px`;
+        canvas.style.height = `${displayHeight}px`;
+
+        // internal resolution stays fixed
+        canvas.width = INTERNAL_WIDTH;
+        canvas.height = INTERNAL_HEIGHT;
+      }
+
+      window.addEventListener('resize', resizeCanvas);
+
+      // ==========================================
+      // PROCEDURAL CITY GENERATION
+      // ==========================================
+      function generateCity() {
+        buildings = [];
+        windows = [];
+        const groundY = INTERNAL_HEIGHT * 0.74; // where buildings sit
+        const buildingCount = 28;
+
+        // create varied skyline
+        for (let i = 0; i < buildingCount; i++) {
+          const width = 10 + Math.floor(Math.random() * 22); // 10-32 px
+          const height = 30 + Math.floor(Math.random() * 110); // 30-140 px
+          const x = (i / buildingCount) * INTERNAL_WIDTH + (Math.random() * 6 - 3);
+          buildings.push({
+            x: Math.max(2, Math.min(INTERNAL_WIDTH - width - 2, x)),
+            y: groundY - height,
+            width: width,
+            height: height,
+          });
+        }
+
+        // sort by x for cleaner rendering (optional)
+        buildings.sort((a, b) => a.x - b.x);
+
+        // generate windows for each building
+        buildings.forEach((b, idx) => {
+          const cols = Math.floor(b.width / 7);
+          const rows = Math.floor(b.height / 8);
+          if (cols < 1 || rows < 1) return;
+
+          for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+              // random skip to avoid overcrowding
+              if (Math.random() > 0.68) continue;
+              windows.push({
+                buildingIdx: idx,
+                col,
+                row,
+                baseOn: Math.random() > 0.45, // whether window is normally lit
+                phase: Math.random() * Math.PI * 2,
+                speed: 0.03 + Math.random() * 0.09,
+              });
+            }
+          }
+        });
+      }
+
+      // ==========================================
+      // STARS & SHOOTING STARS GENERATION
+      // ==========================================
+      function generateStars() {
+        stars = [];
+        for (let i = 0; i < 90; i++) {
+          stars.push({
+            x: Math.random() * INTERNAL_WIDTH,
+            y: Math.random() * INTERNAL_HEIGHT * 0.48,
+            brightness: 0.3 + Math.random() * 0.7,
+            twinkleSpeed: 0.02 + Math.random() * 0.06,
+            phase: Math.random() * Math.PI * 2,
+          });
+        }
+      }
+
+      function spawnShootingStar() {
+        // occasional shooting star
+        if (Math.random() < 0.003 && shootingStars.length < 2) {
+          shootingStars.push({
+            x: Math.random() * INTERNAL_WIDTH * 0.8,
+            y: Math.random() * INTERNAL_HEIGHT * 0.25,
+            length: 15 + Math.random() * 30,
+            speed: 2.5 + Math.random() * 5,
+            life: 1.0,
+            angle: -0.4 + Math.random() * 0.3,
+          });
+        }
+      }
+
+      // ==========================================
+      // UPDATE ANIMATION STATE (time-based)
+      // ==========================================
+      function updateSimulation(deltaSec) {
+        // train movement
+        trainX = (trainX + TRAIN_SPEED * deltaSec) % 1.0;
+
+        // water phase for reflection animation
+        waterPhase = (waterPhase + deltaSec * 1.8) % (Math.PI * 2);
+
+        // fog offset (slow drift)
+        fogOffset = (fogOffset + deltaSec * 0.2) % 100;
+
+        // update shooting stars
+        for (let i = shootingStars.length - 1; i >= 0; i--) {
+          const s = shootingStars[i];
+          s.x += Math.cos(s.angle) * s.speed * deltaSec * 20;
+          s.y += Math.sin(s.angle) * s.speed * deltaSec * 20;
+          s.life -= deltaSec * 0.9;
+          if (s.life <= 0 || s.x < -30 || s.x > INTERNAL_WIDTH + 30 || s.y < -20 || s.y > INTERNAL_HEIGHT * 0.6) {
+            shootingStars.splice(i, 1);
+          }
+        }
+
+        // occasionally spawn new shooting star
+        spawnShootingStar();
+      }
+
+      // ==========================================
+      // PIXEL RENDERING (CYBERPUNK PALETTE)
+      // ==========================================
+      function drawScene() {
+        ctx.clearRect(0, 0, INTERNAL_WIDTH, INTERNAL_HEIGHT);
+
+        // ----- deep navy night sky gradient -----
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, INTERNAL_HEIGHT * 0.8);
+        skyGrad.addColorStop(0, '#050b1a');
+        skyGrad.addColorStop(0.7, '#0f1a2f');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, INTERNAL_WIDTH, INTERNAL_HEIGHT);
+
+        // ----- pixel stars with twinkle -----
+        stars.forEach(star => {
+          const twinkle = 0.5 + 0.5 * Math.sin(frameCount * star.twinkleSpeed + star.phase);
+          const alpha = star.brightness * twinkle;
+          ctx.fillStyle = `rgba(210, 230, 255, ${alpha})`;
+          // draw 2x2 pixel star for crisp look
+          ctx.fillRect(Math.floor(star.x), Math.floor(star.y), 2, 2);
+          // soft neon glow around star
+          ctx.fillStyle = `rgba(140, 200, 255, ${alpha * 0.5})`;
+          ctx.fillRect(Math.floor(star.x) - 1, Math.floor(star.y) - 1, 4, 4);
+        });
+
+        // ----- small pixel moon (cyan/purple tint) -----
+        const moonX = INTERNAL_WIDTH * 0.82;
+        const moonY = INTERNAL_HEIGHT * 0.12;
+        ctx.fillStyle = '#d9f0ff';
+        ctx.fillRect(moonX, moonY, 14, 14);
+        ctx.fillStyle = '#bae6fd';
+        ctx.fillRect(moonX + 2, moonY + 2, 10, 10);
+        // moon craters (pixel)
+        ctx.fillStyle = '#7aa9c4';
+        ctx.fillRect(moonX + 4, moonY + 3, 3, 3);
+        ctx.fillRect(moonX + 9, moonY + 8, 2, 2);
+        // moon glow
+        ctx.fillStyle = 'rgba(125, 211, 252, 0.25)';
+        ctx.fillRect(moonX - 2, moonY - 2, 18, 18);
+
+        // ----- shooting stars -----
+        shootingStars.forEach(star => {
+          const alpha = star.life * 0.9;
+          ctx.fillStyle = `rgba(255, 245, 200, ${alpha})`;
+          const len = star.length;
+          for (let i = 0; i < len; i += 2) {
+            const px = star.x + Math.cos(star.angle) * i;
+            const py = star.y + Math.sin(star.angle) * i;
+            ctx.fillRect(Math.floor(px), Math.floor(py), 2, 2);
+          }
+          // brighter head
+          ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+          ctx.fillRect(Math.floor(star.x), Math.floor(star.y), 3, 3);
+        });
+
+        // ----- atmospheric fog (soft horizontal bands) -----
+        for (let y = INTERNAL_HEIGHT * 0.55; y < INTERNAL_HEIGHT; y += 14) {
+          const alpha = 0.04 + 0.02 * Math.sin(y * 0.1 + fogOffset);
+          ctx.fillStyle = `rgba(80, 120, 180, ${alpha})`;
+          ctx.fillRect(0, y, INTERNAL_WIDTH, 6);
+        }
+
+        // ----- city skyline (buildings) -----
+        buildings.forEach(b => {
+          // building silhouette
+          ctx.fillStyle = '#0b1424';
+          ctx.fillRect(b.x, b.y, b.width, b.height);
+          // neon border (cyan/purple)
+          ctx.strokeStyle = '#2dd4bf';
+          ctx.lineWidth = 1.2;
+          ctx.strokeRect(b.x + 0.5, b.y + 0.5, b.width - 1, b.height - 1);
+          // rooftop glow
+          ctx.fillStyle = '#7dd3fc';
+          ctx.fillRect(b.x, b.y - 2, b.width, 3);
+        });
+
+        // ----- glowing windows (random blink + neon bloom) -----
+        windows.forEach(win => {
+          const building = buildings[win.buildingIdx];
+          if (!building) return;
+          const winX = building.x + 3 + win.col * 7;
+          const winY = building.y + 4 + win.row * 8;
+
+          // determine lit state with organic flicker
+          let lit = win.baseOn;
+          if (lit) {
+            const noise = Math.sin(frameCount * win.speed + win.phase);
+            lit = noise > -0.25; // mostly on but occasionally blinks off
+          }
+
+          if (lit) {
+            // warm yellow / orange glow
+            ctx.fillStyle = '#fbbf24';
+            ctx.shadowColor = '#f97316';
+            ctx.shadowBlur = 8;
+            ctx.fillRect(winX, winY, 5, 5);
+            // inner bright pixel
+            ctx.fillStyle = '#fff7d6';
+            ctx.fillRect(winX + 1, winY + 1, 2, 2);
+            // reset shadow for next draws
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+          } else {
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(winX, winY, 5, 5);
+          }
+        });
+
+        // ----- water reflection area -----
+        const waterY = INTERNAL_HEIGHT * 0.76;
+        ctx.fillStyle = '#0b1e3a';
+        ctx.fillRect(0, waterY, INTERNAL_WIDTH, INTERNAL_HEIGHT - waterY);
+
+        // animated water lines (pixel reflection)
+        for (let y = waterY; y < INTERNAL_HEIGHT; y += 5) {
+          const offset = Math.sin(y * 0.25 + waterPhase) * 2.2;
+          ctx.fillStyle = `rgba(45, 212, 191, 0.2)`;
+          ctx.fillRect(0, y + offset, INTERNAL_WIDTH, 2);
+        }
+
+        // building reflections on water (subtle)
+        buildings.forEach(b => {
+          const reflectY = waterY + 3;
+          ctx.fillStyle = `rgba(56, 189, 248, 0.12)`;
+          ctx.fillRect(b.x + 2, reflectY, b.width - 4, 3);
+        });
+
+        // ----- pixel train (multiple wagons) -----
+        const trainPixelX = Math.floor(trainX * INTERNAL_WIDTH);
+        const trainY = INTERNAL_HEIGHT * 0.71; // sits just above water
+        const wagonWidth = 18;
+        const wagonHeight = 9;
+        const gap = 3;
+        const wagons = 3;
+
+        for (let w = 0; w < wagons; w++) {
+          const wagonX = trainPixelX + w * (wagonWidth + gap);
+          // wrap around if off-screen right
+          const drawX = ((wagonX % (INTERNAL_WIDTH + wagonWidth * 2)) + INTERNAL_WIDTH + wagonWidth) % (INTERNAL_WIDTH + wagonWidth) - wagonWidth;
+
+          // wagon body (purple/blue cyberpunk)
+          ctx.fillStyle = '#7c3aed';
+          ctx.fillRect(drawX, trainY, wagonWidth, wagonHeight);
+          // wagon outline
+          ctx.strokeStyle = '#a78bfa';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(drawX + 0.5, trainY + 0.5, wagonWidth - 1, wagonHeight - 1);
+          // windows on wagon
+          ctx.fillStyle = '#fde047';
+          ctx.fillRect(drawX + 3, trainY + 2, 5, 4);
+          ctx.fillRect(drawX + 10, trainY + 2, 5, 4);
+          // roof detail
+          ctx.fillStyle = '#c084fc';
+          ctx.fillRect(drawX + 2, trainY - 2, wagonWidth - 4, 3);
+        }
+
+        // front light on the locomotive (first wagon)
+        const locoX = trainPixelX;
+        ctx.fillStyle = '#facc15';
+        ctx.shadowColor = '#fbbf24';
+        ctx.shadowBlur = 12;
+        ctx.fillRect(locoX + wagonWidth - 2, trainY + 3, 5, 4);
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+
+        // ----- train smoke particles (pixel puffs) -----
+        const smokeBaseX = trainPixelX + wagonWidth - 4;
+        for (let i = 0; i < 5; i++) {
+          const offsetX = i * 5 + Math.sin(frameCount * 0.4 + i) * 2;
+          const offsetY = -6 - i * 2.5;
+          const alpha = 0.7 - i * 0.12;
+          ctx.fillStyle = `rgba(200, 210, 240, ${Math.max(0, alpha)})`;
+          ctx.fillRect(smokeBaseX + offsetX, trainY + offsetY, 5, 4);
+        }
+
+        // ----- train reflection on water -----
+        const reflectTrainY = waterY + 2;
+        for (let w = 0; w < wagons; w++) {
+          const wagonX = trainPixelX + w * (wagonWidth + gap);
+          const drawX = ((wagonX % (INTERNAL_WIDTH + wagonWidth * 2)) + INTERNAL_WIDTH + wagonWidth) % (INTERNAL_WIDTH + wagonWidth) - wagonWidth;
+          ctx.fillStyle = `rgba(124, 58, 237, 0.35)`;
+          ctx.fillRect(drawX, reflectTrainY, wagonWidth, 4);
+        }
+
+        // soft bloom effect across entire scene (global overlay)
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.04)';
+        ctx.fillRect(0, 0, INTERNAL_WIDTH, INTERNAL_HEIGHT);
+      }
+
+      // ==========================================
+      // ANIMATION LOOP (60 FPS)
+      // ==========================================
+      function tick(now) {
+        if (lastTimestamp === 0) {
+          lastTimestamp = now;
+        }
+        const deltaMs = Math.min(50, now - lastTimestamp); // cap to avoid jumps
+        const deltaSec = deltaMs / 1000;
+        lastTimestamp = now;
+        frameCount++;
+
+        // update logic
+        updateSimulation(deltaSec);
+
+        // draw everything
+        drawScene();
+
+        animationFrameId = requestAnimationFrame(tick);
+      }
+
+      // ==========================================
+      // INITIALIZATION
+      // ==========================================
+      function init() {
+        resizeCanvas();
+        generateCity();
+        generateStars();
+        // start with a couple of shooting stars for effect
+        for (let i = 0; i < 2; i++) {
+          shootingStars.push({
+            x: Math.random() * INTERNAL_WIDTH * 0.7,
+            y: Math.random() * INTERNAL_HEIGHT * 0.2,
+            length: 20 + Math.random() * 25,
+            speed: 3 + Math.random() * 4,
+            life: 0.8,
+            angle: -0.5 + Math.random() * 0.4,
+          });
+        }
+
+        // begin animation
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        lastTimestamp = 0;
+        animationFrameId = requestAnimationFrame(tick);
+      }
+
+      // start everything
+      init();
+
+      // cleanup on page unload (optional but nice)
+      window.addEventListener('beforeunload', () => {
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      });
+    })();
+  </script>
+</body>
+</html>
