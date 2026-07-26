@@ -1,0 +1,2050 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>XYZ Vault - Protect Your Digital Life</title>
+    <meta name="theme-color" content="#050505">
+    <meta name="description" content="XYZ Vault - Personal Cyber Locker">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="https://raw.githubusercontent.com/zildjian1225/XYZ/refs/heads/main/file_00000000d1d481fbae7913abf5a17cf2.png">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/zildjian1225/XYZ/refs/heads/main/file_00000000d1d481fbae7913abf5a17cf2.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================================
+           XYZ VAULT - STYLE.CSS
+           Black & White Cyber Minimalist
+           ============================================================ */
+
+        /* ----- RESET & BASE ----- */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #050505;
+            --bg-secondary: #0a0a0a;
+            --bg-card: #111111;
+            --bg-card-hover: #1a1a1a;
+            --bg-input: rgba(255, 255, 255, 0.03);
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --text-muted: #555555;
+            --border-color: rgba(255, 255, 255, 0.06);
+            --border-hover: rgba(255, 255, 255, 0.12);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            --shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.8);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --radius-lg: 24px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        html,
+        body {
+            font-family: var(--font);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            user-select: none;
+        }
+
+        /* ----- SCROLLBAR ----- */
+        ::-webkit-scrollbar {
+            width: 3px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* ----- SELECTION ----- */
+        ::selection {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+
+        /* ----- SPLASH SCREEN ----- */
+        #splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+
+        #splash.hide {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .splash-logo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            animation: splashPulse 1.5s ease-in-out infinite;
+            box-shadow: 0 0 60px rgba(255, 255, 255, 0.03);
+        }
+
+        @keyframes splashPulse {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .splash-title {
+            margin-top: 18px;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff, #888888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .splash-sub {
+            font-size: 12px;
+            font-weight: 300;
+            color: rgba(255, 255, 255, 0.25);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .splash-loader {
+            margin-top: 32px;
+            width: 180px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .splash-loader-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #ffffff, #888888);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* ----- APP CONTAINER ----- */
+        #app {
+            display: none;
+            height: 100%;
+            width: 100%;
+            flex-direction: column;
+            background: var(--bg-primary);
+            animation: appFadeIn 0.5s ease;
+        }
+
+        @keyframes appFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ----- HEADER ----- */
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: rgba(5, 5, 5, 0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+            min-height: 56px;
+            z-index: 10;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-logo {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .header-title {
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .header-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+        }
+
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-primary);
+        }
+
+        /* ----- PAGES ----- */
+        .pages {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .page {
+            display: none;
+            height: 100%;
+            overflow-y: auto;
+            padding: 16px 18px 90px;
+            animation: pageFade 0.3s ease;
+        }
+
+        @keyframes pageFade {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .page-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        /* ----- BOTTOM NAV ----- */
+        .bottom-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 6px 0 12px;
+            background: rgba(5, 5, 5, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border-color);
+            flex-shrink: 0;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 4px 12px;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1px;
+            font-family: var(--font);
+            position: relative;
+        }
+
+        .nav-item .nav-icon {
+            font-size: 20px;
+            transition: var(--transition);
+        }
+
+        .nav-item .nav-label {
+            font-size: 9px;
+            letter-spacing: 0.3px;
+            opacity: 0.7;
+        }
+
+        .nav-item.active {
+            color: var(--text-primary);
+        }
+
+        .nav-item.active .nav-icon {
+            transform: scale(1.1);
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 30%;
+            right: 30%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ffffff, transparent);
+            border-radius: 2px;
+        }
+
+        .nav-item:hover {
+            color: var(--text-primary);
+        }
+
+        /* ----- CARDS ----- */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            margin-bottom: 12px;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-hover);
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .card-sub {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .card-clickable {
+            cursor: pointer;
+        }
+
+        .card-clickable:active {
+            transform: scale(0.98);
+        }
+
+        /* ----- DASHBOARD STATS ----- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 18px 14px;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-2px);
+            border-color: var(--border-hover);
+        }
+
+        .stat-icon {
+            font-size: 22px;
+            margin-bottom: 2px;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff, #888888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* ----- FORM ELEMENTS ----- */
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            letter-spacing: 0.3px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: var(--font);
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        textarea.form-input {
+            resize: vertical;
+            min-height: 80px;
+            font-family: var(--font);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper .toggle-pass {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+            transition: var(--transition);
+        }
+
+        .input-wrapper .toggle-pass:hover {
+            color: var(--text-primary);
+        }
+
+        /* ----- BUTTONS ----- */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 600;
+            font-family: var(--font);
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            text-align: center;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ffffff, #888888);
+            color: #050505;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.06);
+        }
+
+        .btn-danger {
+            background: rgba(255, 68, 68, 0.12);
+            color: #ff4444;
+            border: 1px solid rgba(255, 68, 68, 0.1);
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 68, 68, 0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 12px;
+            width: auto;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-group .btn {
+            flex: 1;
+        }
+
+        /* ----- LIST ITEMS ----- */
+        .list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            margin-bottom: 8px;
+            transition: var(--transition);
+        }
+
+        .list-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--border-hover);
+        }
+
+        .list-item-left {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .list-item-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .list-item-sub {
+            font-size: 12px;
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .list-item-actions {
+            display: flex;
+            gap: 2px;
+            flex-shrink: 0;
+        }
+
+        .list-item-actions button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        .list-item-actions button:hover {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-primary);
+        }
+
+        .list-item-actions .delete-btn:hover {
+            color: #ff4444;
+            background: rgba(255, 68, 68, 0.08);
+        }
+
+        /* ----- PIN LOGIN ----- */
+        .pin-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 40px 24px;
+            text-align: center;
+        }
+
+        .pin-container .pin-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 18px;
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.03);
+        }
+
+        .pin-container h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .pin-container p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .pin-dots {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .pin-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            transition: var(--transition);
+        }
+
+        .pin-dot.filled {
+            border-color: var(--text-primary);
+            background: var(--text-primary);
+            box-shadow: 0 0 16px rgba(255, 255, 255, 0.05);
+        }
+
+        .pin-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            max-width: 280px;
+            width: 100%;
+        }
+
+        .pin-key {
+            padding: 16px;
+            border: none;
+            border-radius: var(--radius);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 22px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+            border: 1px solid var(--border-color);
+        }
+
+        .pin-key:hover {
+            background: var(--bg-card-hover);
+            transform: scale(1.02);
+            border-color: var(--border-hover);
+        }
+
+        .pin-key:active {
+            transform: scale(0.94);
+        }
+
+        .pin-key.empty {
+            background: none;
+            border: none;
+            pointer-events: none;
+        }
+
+        .pin-key.delete {
+            background: rgba(255, 68, 68, 0.06);
+            color: #ff4444;
+            border-color: rgba(255, 68, 68, 0.06);
+        }
+
+        .pin-key.delete:hover {
+            background: rgba(255, 68, 68, 0.12);
+        }
+
+        /* ----- SETTINGS ----- */
+        .settings-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+
+        .settings-item-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .settings-item-left .icon {
+            font-size: 18px;
+            width: 30px;
+            text-align: center;
+        }
+
+        .settings-item-left .label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .settings-item-left .desc {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .settings-item .arrow {
+            color: var(--text-secondary);
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .settings-item:hover .arrow {
+            transform: translateX(3px);
+        }
+
+        /* ----- MODAL ----- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlide 0.3s ease;
+            box-shadow: var(--shadow-hover);
+        }
+
+        @keyframes modalSlide {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-primary);
+        }
+
+        /* ----- TOAST ----- */
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 10px 22px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: var(--text-primary);
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.35s ease;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            white-space: nowrap;
+            box-shadow: var(--shadow);
+            font-family: var(--font);
+        }
+
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ----- EMPTY STATE ----- */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state .empty-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.3;
+        }
+
+        .empty-state h3 {
+            font-size: 16px;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .empty-state p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* ----- SCAN LINE ANIMATION (Cyber Effect) ----- */
+        .scan-line {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scan-line::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.04), transparent);
+            animation: scanMove 4s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scanMove {
+            0% {
+                top: 0;
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                top: 100%;
+                opacity: 0;
+            }
+        }
+
+        /* ----- RESPONSIVE ----- */
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .stat-number {
+                font-size: 24px;
+            }
+
+            .page {
+                padding: 12px 14px 90px;
+            }
+
+            .modal {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .pin-pad {
+                gap: 10px;
+                max-width: 240px;
+            }
+
+            .pin-key {
+                padding: 14px;
+                font-size: 20px;
+            }
+
+            .app-header {
+                padding: 10px 16px;
+                min-height: 50px;
+            }
+
+            .header-title {
+                font-size: 15px;
+            }
+
+            .bottom-nav {
+                padding: 4px 0 10px;
+            }
+
+            .nav-item .nav-label {
+                font-size: 8px;
+            }
+
+            .nav-item .nav-icon {
+                font-size: 18px;
+            }
+
+            .toast {
+                font-size: 12px;
+                padding: 8px 18px;
+                bottom: 72px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .stats-grid {
+                gap: 8px;
+            }
+
+            .stat-card {
+                padding: 14px 10px;
+            }
+
+            .stat-number {
+                font-size: 20px;
+            }
+
+            .stat-icon {
+                font-size: 18px;
+            }
+
+            .pin-pad {
+                gap: 8px;
+                max-width: 200px;
+            }
+
+            .pin-key {
+                padding: 12px;
+                font-size: 18px;
+            }
+
+            .pin-dots {
+                gap: 8px;
+            }
+
+            .pin-dot {
+                width: 12px;
+                height: 12px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .page {
+                padding: 20px 24px 90px;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+
+            .modal {
+                max-width: 440px;
+            }
+
+            .pin-pad {
+                max-width: 320px;
+            }
+
+            .pin-key {
+                padding: 20px;
+                font-size: 24px;
+            }
+        }
+
+        /* ----- OFFLINE INDICATOR ----- */
+        .offline-badge {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: rgba(255, 193, 7, 0.1);
+            border-radius: 20px;
+            font-size: 10px;
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.1);
+        }
+
+        .offline-badge.show {
+            display: flex;
+        }
+
+        .offline-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #ffc107;
+            animation: offlinePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes offlinePulse {
+            0%,
+            100% {
+                opacity: 0.4;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== SPLASH SCREEN ===== -->
+    <div id="splash">
+        <img src="https://raw.githubusercontent.com/zildjian1225/XYZ/refs/heads/main/file_00000000d1d481fbae7913abf5a17cf2.png" alt="XYZ Vault" class="splash-logo">
+        <div class="splash-title">XYZ Vault</div>
+        <div class="splash-sub">Protect Your Digital Life</div>
+        <div class="splash-loader">
+            <div class="splash-loader-bar" id="splashBar"></div>
+        </div>
+    </div>
+
+    <!-- ===== APP ===== -->
+    <div id="app">
+
+        <!-- ===== PIN LOGIN PAGE ===== -->
+        <div id="pinPage" class="page active">
+            <div class="pin-container">
+                <img src="https://raw.githubusercontent.com/zildjian1225/XYZ/refs/heads/main/file_00000000d1d481fbae7913abf5a17cf2.png" alt="XYZ Vault" class="pin-logo">
+                <h2 id="pinTitle">Masukkan PIN</h2>
+                <p id="pinSub">Masukkan 6 digit PIN Anda</p>
+
+                <div class="pin-dots" id="pinDots">
+                    <span class="pin-dot"></span>
+                    <span class="pin-dot"></span>
+                    <span class="pin-dot"></span>
+                    <span class="pin-dot"></span>
+                    <span class="pin-dot"></span>
+                    <span class="pin-dot"></span>
+                </div>
+
+                <div class="pin-pad" id="pinPad">
+                    <button class="pin-key" data-value="1">1</button>
+                    <button class="pin-key" data-value="2">2</button>
+                    <button class="pin-key" data-value="3">3</button>
+                    <button class="pin-key" data-value="4">4</button>
+                    <button class="pin-key" data-value="5">5</button>
+                    <button class="pin-key" data-value="6">6</button>
+                    <button class="pin-key" data-value="7">7</button>
+                    <button class="pin-key" data-value="8">8</button>
+                    <button class="pin-key" data-value="9">9</button>
+                    <button class="pin-key empty"></button>
+                    <button class="pin-key" data-value="0">0</button>
+                    <button class="pin-key delete" data-value="delete">⌫</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MAIN APP ===== -->
+        <div id="mainApp" style="display:none;flex-direction:column;height:100%;">
+
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-left">
+                    <img src="https://raw.githubusercontent.com/zildjian1225/XYZ/refs/heads/main/file_00000000d1d481fbae7913abf5a17cf2.png" alt="XYZ" class="header-logo">
+                    <span class="header-title">XYZ Vault</span>
+                    <span class="offline-badge" id="offlineBadge">
+                        <span class="offline-dot"></span>
+                        Offline
+                    </span>
+                </div>
+                <div class="header-actions">
+                    <button class="header-btn" id="logoutBtn" title="Logout" aria-label="Logout">🚪</button>
+                </div>
+            </header>
+
+            <!-- Pages -->
+            <div class="pages">
+                <!-- Dashboard -->
+                <div class="page active" id="pageDashboard">
+                    <div style="margin-bottom: 16px;">
+                        <h2 style="font-size: 20px; font-weight: 700;">Dashboard</h2>
+                        <p style="font-size: 13px; color: var(--text-secondary);">Kelola data digital Anda dengan aman</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">🔐</div>
+                            <div class="stat-number" id="totalPasswords">0</div>
+                            <div class="stat-label">Password Tersimpan</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📝</div>
+                            <div class="stat-number" id="totalNotes">0</div>
+                            <div class="stat-label">Catatan Tersimpan</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 16px;">
+                        <div class="card card-clickable" onclick="navigateTo('pagePasswords')">
+                            <div style="display: flex; align-items: center; gap: 14px;">
+                                <span style="font-size: 24px;">🔐</span>
+                                <div style="flex:1;">
+                                    <div class="card-title">Password Vault</div>
+                                    <div class="card-sub">Kelola semua password Anda</div>
+                                </div>
+                                <span style="color: var(--text-secondary); font-size: 16px;">→</span>
+                            </div>
+                        </div>
+
+                        <div class="card card-clickable" onclick="navigateTo('pageNotes')">
+                            <div style="display: flex; align-items: center; gap: 14px;">
+                                <span style="font-size: 24px;">📝</span>
+                                <div style="flex:1;">
+                                    <div class="card-title">Secure Notes</div>
+                                    <div class="card-sub">Catatan pribadi terenkripsi</div>
+                                </div>
+                                <span style="color: var(--text-secondary); font-size: 16px;">→</span>
+                            </div>
+                        </div>
+
+                        <div class="card card-clickable" onclick="navigateTo('pageGenerator')">
+                            <div style="display: flex; align-items: center; gap: 14px;">
+                                <span style="font-size: 24px;">🎲</span>
+                                <div style="flex:1;">
+                                    <div class="card-title">Password Generator</div>
+                                    <div class="card-sub">Buat password kuat dan aman</div>
+                                </div>
+                                <span style="color: var(--text-secondary); font-size: 16px;">→</span>
+                            </div>
+                        </div>
+
+                        <div class="card card-clickable" onclick="navigateTo('pageSettings')">
+                            <div style="display: flex; align-items: center; gap: 14px;">
+                                <span style="font-size: 24px;">⚙️</span>
+                                <div style="flex:1;">
+                                    <div class="card-title">Settings</div>
+                                    <div class="card-sub">Konfigurasi dan keamanan</div>
+                                </div>
+                                <span style="color: var(--text-secondary); font-size: 16px;">→</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Passwords -->
+                <div class="page" id="pagePasswords">
+                    <div class="page-header">
+                        <h2>🔐 Password Vault</h2>
+                        <button class="btn btn-primary btn-sm" onclick="showModal('passwordModal')">+ Tambah</button>
+                    </div>
+                    <div id="passwordList"></div>
+                </div>
+
+                <!-- Notes -->
+                <div class="page" id="pageNotes">
+                    <div class="page-header">
+                        <h2>📝 Secure Notes</h2>
+                        <button class="btn btn-primary btn-sm" onclick="showModal('noteModal')">+ Tambah</button>
+                    </div>
+                    <div id="noteList"></div>
+                </div>
+
+                <!-- Generator -->
+                <div class="page" id="pageGenerator">
+                    <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 16px;">🎲 Password Generator</h2>
+                    <div class="card scan-line">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="text" id="generatedPassword" class="form-input" readonly style="flex:1; font-family: monospace; font-size: 16px; letter-spacing: 1px;">
+                            <button class="btn btn-primary btn-sm" onclick="copyPassword()" style="width: auto; padding: 10px 16px;">📋</button>
+                        </div>
+                        <div style="margin-top: 14px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                            <label style="font-size: 12px; color: var(--text-secondary);">Panjang:</label>
+                            <input type="number" id="passLength" value="16" min="8" max="32" style="width: 64px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: #fff; font-size: 14px; font-family: var(--font); outline: none;">
+                            <button class="btn btn-primary btn-sm" onclick="generatePassword()" style="width: auto; padding: 8px 20px;">🔄 Generate</button>
+                        </div>
+                        <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px;">
+                            <span style="font-size: 11px; color: var(--text-muted);">Kuat:</span>
+                            <span style="font-size: 11px; color: #4caf50;">●</span>
+                            <span style="font-size: 11px; color: #4caf50;">●</span>
+                            <span style="font-size: 11px; color: #4caf50;">●</span>
+                            <span style="font-size: 11px; color: #4caf50;">●</span>
+                            <span style="font-size: 11px; color: var(--text-muted);">(128-bit)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div class="page" id="pageSettings">
+                    <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 16px;">⚙️ Settings</h2>
+                    <div class="card">
+                        <div class="settings-item">
+                            <div class="settings-item-left">
+                                <span class="icon">🔑</span>
+                                <div>
+                                    <div class="label">Ganti PIN</div>
+                                    <div class="desc">Ubah PIN keamanan Anda</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" onclick="showModal('changePinModal')" style="width: auto;">Ganti</button>
+                        </div>
+                        <div class="settings-item">
+                            <div class="settings-item-left">
+                                <span class="icon">📤</span>
+                                <div>
+                                    <div class="label">Export Data</div>
+                                    <div class="desc">Backup semua data ke file JSON</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" onclick="exportData()" style="width: auto;">Export</button>
+                        </div>
+                        <div class="settings-item">
+                            <div class="settings-item-left">
+                                <span class="icon">📥</span>
+                                <div>
+                                    <div class="label">Import Data</div>
+                                    <div class="desc">Restore data dari file backup</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('importFile').click()" style="width: auto;">Import</button>
+                            <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
+                        </div>
+                        <div class="settings-item">
+                            <div class="settings-item-left">
+                                <span class="icon">💾</span>
+                                <div>
+                                    <div class="label">Storage</div>
+                                    <div class="desc">Data tersimpan di perangkat Anda</div>
+                                </div>
+                            </div>
+                            <span style="font-size: 11px; color: var(--text-muted);">Lokal</span>
+                        </div>
+                        <div class="settings-item" style="border-bottom: none;">
+                            <div class="settings-item-left">
+                                <span class="icon">ℹ️</span>
+                                <div>
+                                    <div class="label">About XYZ Vault</div>
+                                    <div class="desc">Version 1.0.0 • Personal Cyber Locker</div>
+                                </div>
+                            </div>
+                            <span class="arrow">→</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Nav -->
+            <div class="bottom-nav">
+                <button class="nav-item active" data-page="pageDashboard" aria-label="Home">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-label">Home</span>
+                </button>
+                <button class="nav-item" data-page="pagePasswords" aria-label="Passwords">
+                    <span class="nav-icon">🔐</span>
+                    <span class="nav-label">Vault</span>
+                </button>
+                <button class="nav-item" data-page="pageNotes" aria-label="Notes">
+                    <span class="nav-icon">📝</span>
+                    <span class="nav-label">Notes</span>
+                </button>
+                <button class="nav-item" data-page="pageGenerator" aria-label="Generator">
+                    <span class="nav-icon">🎲</span>
+                    <span class="nav-label">Generate</span>
+                </button>
+                <button class="nav-item" data-page="pageSettings" aria-label="Settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-label">Settings</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODALS ===== -->
+    <!-- Password Modal -->
+    <div class="modal-overlay" id="passwordModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="passwordModalTitle">Tambah Password</div>
+                <button class="modal-close" onclick="hideModal('passwordModal')">✕</button>
+            </div>
+            <input type="hidden" id="editPasswordId">
+            <div class="form-group">
+                <label>Nama Layanan</label>
+                <input type="text" id="pService" class="form-input" placeholder="Contoh: Google, Facebook" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>Username / Email</label>
+                <input type="text" id="pUsername" class="form-input" placeholder="username@email.com" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-wrapper">
+                    <input type="password" id="pPassword" class="form-input password-input" placeholder="••••••••" autocomplete="off">
+                    <button class="toggle-pass" onclick="togglePass('pPassword')" aria-label="Toggle password visibility">👁️</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Catatan (opsional)</label>
+                <input type="text" id="pNote" class="form-input" placeholder="Catatan tambahan" autocomplete="off">
+            </div>
+            <button class="btn btn-primary" onclick="savePassword()">💾 Simpan</button>
+        </div>
+    </div>
+
+    <!-- Note Modal -->
+    <div class="modal-overlay" id="noteModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="noteModalTitle">Tambah Catatan</div>
+                <button class="modal-close" onclick="hideModal('noteModal')">✕</button>
+            </div>
+            <input type="hidden" id="editNoteId">
+            <div class="form-group">
+                <label>Judul</label>
+                <input type="text" id="nTitle" class="form-input" placeholder="Judul catatan" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>Isi Catatan</label>
+                <textarea id="nContent" class="form-input" rows="4" placeholder="Tulis catatan Anda di sini..."></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="saveNote()">💾 Simpan</button>
+        </div>
+    </div>
+
+    <!-- Change PIN Modal -->
+    <div class="modal-overlay" id="changePinModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Ganti PIN</div>
+                <button class="modal-close" onclick="hideModal('changePinModal')">✕</button>
+            </div>
+            <div class="form-group">
+                <label>PIN Lama</label>
+                <input type="password" id="oldPin" class="form-input" placeholder="Masukkan PIN lama" maxlength="6" inputmode="numeric">
+            </div>
+            <div class="form-group">
+                <label>PIN Baru</label>
+                <input type="password" id="newPin" class="form-input" placeholder="Masukkan PIN baru" maxlength="6" inputmode="numeric">
+            </div>
+            <div class="form-group">
+                <label>Konfirmasi PIN Baru</label>
+                <input type="password" id="confirmPin" class="form-input" placeholder="Konfirmasi PIN baru" maxlength="6" inputmode="numeric">
+            </div>
+            <button class="btn btn-primary" onclick="changePin()">🔄 Ganti PIN</button>
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ===== SCRIPT ===== -->
+    <script>
+        // ============================================================
+        // XYZ VAULT - SCRIPT.JS
+        // Pure JavaScript, No Dependencies
+        // PWA Ready - Offline Support
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // ==========================================================
+            // KONFIGURASI
+            // ==========================================================
+            const APP_NAME = 'XYZ Vault';
+            const LOGO_URL =
+                'https://raw.githubusercontent.com/zildjian1225/XYZ/refs/heads/main/file_00000000d1d481fbae7913abf5a17cf2.png';
+
+            // ==========================================================
+            // STATE
+            // ==========================================================
+            let currentPin = localStorage.getItem('xyz_vault_pin') || '';
+            let passwords = JSON.parse(localStorage.getItem('xyz_vault_passwords') || '[]');
+            let notes = JSON.parse(localStorage.getItem('xyz_vault_notes') || '[]');
+            let pinEntry = '';
+            let isLoggedIn = false;
+
+            // ==========================================================
+            // DOM REFS
+            // ==========================================================
+            const $ = (id) => document.getElementById(id);
+            const splash = $('splash');
+            const splashBar = $('splashBar');
+            const app = $('app');
+            const pinPage = $('pinPage');
+            const mainApp = $('mainApp');
+            const pinDots = $('pinDots');
+            const pinTitle = $('pinTitle');
+            const pinSub = $('pinSub');
+            const toast = $('toast');
+            const offlineBadge = $('offlineBadge');
+
+            // ==========================================================
+            // SPLASH SCREEN
+            // ==========================================================
+            function showSplash() {
+                let progress = 0;
+                const duration = 3000;
+                const interval = 30;
+                const steps = duration / interval;
+                const increment = 100 / steps;
+
+                const timer = setInterval(() => {
+                    progress += increment;
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(timer);
+                        setTimeout(() => {
+                            splash.classList.add('hide');
+                            setTimeout(() => {
+                                splash.style.display = 'none';
+                                initApp();
+                            }, 600);
+                        }, 200);
+                    }
+                    splashBar.style.width = progress + '%';
+                }, interval);
+            }
+
+            // ==========================================================
+            // INIT APP
+            // ==========================================================
+            function initApp() {
+                app.style.display = 'flex';
+                checkOnlineStatus();
+
+                // Cek offline status
+                window.addEventListener('online', () => checkOnlineStatus());
+                window.addEventListener('offline', () => checkOnlineStatus());
+
+                if (currentPin === '') {
+                    pinTitle.textContent = 'Buat PIN';
+                    pinSub.textContent = 'Buat 6 digit PIN untuk keamanan';
+                    pinPage.style.display = 'flex';
+                    mainApp.style.display = 'none';
+                } else {
+                    pinTitle.textContent = 'Masukkan PIN';
+                    pinSub.textContent = 'Masukkan 6 digit PIN Anda';
+                    pinPage.style.display = 'flex';
+                    mainApp.style.display = 'none';
+                }
+
+                // PIN Pad Listeners
+                document.querySelectorAll('.pin-key').forEach(key => {
+                    key.addEventListener('click', function() {
+                        const value = this.dataset.value;
+                        if (value === 'delete') {
+                            pinEntry = pinEntry.slice(0, -1);
+                        } else if (pinEntry.length < 6) {
+                            pinEntry += value;
+                        }
+                        updatePinDots();
+                        if (pinEntry.length === 6) {
+                            handlePinEntry();
+                        }
+                    });
+                });
+
+                // Keyboard support for PIN
+                document.addEventListener('keydown', function(e) {
+                    if (pinPage.style.display !== 'flex') return;
+                    const key = e.key;
+                    if (key >= '0' && key <= '9' && pinEntry.length < 6) {
+                        pinEntry += key;
+                        updatePinDots();
+                        if (pinEntry.length === 6) handlePinEntry();
+                    } else if (key === 'Backspace') {
+                        pinEntry = pinEntry.slice(0, -1);
+                        updatePinDots();
+                    } else if (key === 'Enter' && pinEntry.length === 6) {
+                        handlePinEntry();
+                    }
+                });
+            }
+
+            // ==========================================================
+            // ONLINE STATUS
+            // ==========================================================
+            function checkOnlineStatus() {
+                if (navigator.onLine) {
+                    offlineBadge.classList.remove('show');
+                } else {
+                    offlineBadge.classList.add('show');
+                }
+            }
+
+            // ==========================================================
+            // PIN FUNCTIONS
+            // ==========================================================
+            function updatePinDots() {
+                const dots = pinDots.querySelectorAll('.pin-dot');
+                dots.forEach((dot, i) => {
+                    dot.classList.toggle('filled', i < pinEntry.length);
+                });
+            }
+
+            function handlePinEntry() {
+                if (currentPin === '') {
+                    currentPin = pinEntry;
+                    localStorage.setItem('xyz_vault_pin', currentPin);
+                    pinEntry = '';
+                    updatePinDots();
+                    showToast('✅ PIN berhasil dibuat!');
+                    loginSuccess();
+                } else {
+                    if (pinEntry === currentPin) {
+                        pinEntry = '';
+                        updatePinDots();
+                        loginSuccess();
+                    } else {
+                        showToast('❌ PIN salah! Coba lagi.');
+                        pinEntry = '';
+                        updatePinDots();
+                        // Shake animation
+                        pinDots.style.animation = 'none';
+                        setTimeout(() => pinDots.style.animation = 'shake 0.3s ease', 10);
+                    }
+                }
+            }
+
+            // Tambahkan keyframe shake
+            const styleSheet = document.createElement('style');
+            styleSheet.textContent = `
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    25% { transform: translateX(-8px); }
+                    75% { transform: translateX(8px); }
+                }
+            `;
+            document.head.appendChild(styleSheet);
+
+            function loginSuccess() {
+                isLoggedIn = true;
+                pinPage.style.display = 'none';
+                mainApp.style.display = 'flex';
+                renderAll();
+                setTimeout(() => {
+                    showToast('👋 Selamat datang di ' + APP_NAME + '!');
+                }, 300);
+            }
+
+            // ==========================================================
+            // LOGOUT
+            // ==========================================================
+            function logout() {
+                if (!confirm('Yakin ingin logout? Data akan tetap tersimpan.')) return;
+                isLoggedIn = false;
+                pinEntry = '';
+                updatePinDots();
+                pinPage.style.display = 'flex';
+                mainApp.style.display = 'none';
+                pinTitle.textContent = 'Masukkan PIN';
+                pinSub.textContent = 'Masukkan 6 digit PIN Anda';
+                showToast('🔒 Anda telah logout');
+            }
+
+            // ==========================================================
+            // NAVIGATION
+            // ==========================================================
+            function navigateTo(pageId) {
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                const target = document.getElementById(pageId);
+                if (target) target.classList.add('active');
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                const navItem = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+                if (navItem) navItem.classList.add('active');
+            }
+
+            // ==========================================================
+            // MODAL
+            // ==========================================================
+            function showModal(id) {
+                document.getElementById(id).classList.add('active');
+            }
+
+            function hideModal(id) {
+                document.getElementById(id).classList.remove('active');
+            }
+
+            // Close modal on overlay click
+            document.querySelectorAll('.modal-overlay').forEach(overlay => {
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.classList.remove('active');
+                    }
+                });
+            });
+
+            // ==========================================================
+            // TOAST
+            // ==========================================================
+            function showToast(msg) {
+                toast.textContent = msg;
+                toast.classList.add('show');
+                clearTimeout(toast._timer);
+                toast._timer = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2500);
+            }
+
+            // ==========================================================
+            // RENDER FUNCTIONS
+            // ==========================================================
+            function renderAll() {
+                renderPasswords();
+                renderNotes();
+                updateStats();
+            }
+
+            function renderPasswords() {
+                const container = document.getElementById('passwordList');
+                if (passwords.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">🔐</div>
+                            <h3>Belum ada password</h3>
+                            <p>Tambahkan password pertama Anda</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = passwords.map((p, i) => `
+                    <div class="list-item">
+                        <div class="list-item-left">
+                            <div class="list-item-title">${escapeHtml(p.service)}</div>
+                            <div class="list-item-sub">${escapeHtml(p.username)} ${p.note ? '• ' + escapeHtml(p.note) : ''}</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <button onclick="viewPassword(${i})" title="Lihat password" aria-label="Lihat password">👁️</button>
+                            <button onclick="editPassword(${i})" title="Edit" aria-label="Edit">✏️</button>
+                            <button class="delete-btn" onclick="deletePassword(${i})" title="Hapus" aria-label="Hapus">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            function renderNotes() {
+                const container = document.getElementById('noteList');
+                if (notes.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📝</div>
+                            <h3>Belum ada catatan</h3>
+                            <p>Buat catatan pribadi Anda</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = notes.map((n, i) => `
+                    <div class="list-item">
+                        <div class="list-item-left">
+                            <div class="list-item-title">${escapeHtml(n.title)}</div>
+                            <div class="list-item-sub">${escapeHtml(n.content.substring(0, 50))}${n.content.length > 50 ? '...' : ''}</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <button onclick="editNote(${i})" title="Edit" aria-label="Edit">✏️</button>
+                            <button class="delete-btn" onclick="deleteNote(${i})" title="Hapus" aria-label="Hapus">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            function updateStats() {
+                document.getElementById('totalPasswords').textContent = passwords.length;
+                document.getElementById('totalNotes').textContent = notes.length;
+            }
+
+            // ==========================================================
+            // PASSWORD FUNCTIONS
+            // ==========================================================
+            function savePassword() {
+                const service = document.getElementById('pService').value.trim();
+                const username = document.getElementById('pUsername').value.trim();
+                const password = document.getElementById('pPassword').value.trim();
+                const note = document.getElementById('pNote').value.trim();
+                const editId = document.getElementById('editPasswordId').value;
+
+                if (!service || !username || !password) {
+                    showToast('⚠️ Semua field wajib diisi!');
+                    return;
+                }
+
+                if (editId) {
+                    const idx = parseInt(editId);
+                    passwords[idx] = { service, username, password, note };
+                    showToast('✅ Password berhasil diupdate!');
+                } else {
+                    passwords.push({ service, username, password, note });
+                    showToast('✅ Password berhasil disimpan!');
+                }
+
+                localStorage.setItem('xyz_vault_passwords', JSON.stringify(passwords));
+                hideModal('passwordModal');
+                resetPasswordForm();
+                renderPasswords();
+                updateStats();
+            }
+
+            function resetPasswordForm() {
+                document.getElementById('pService').value = '';
+                document.getElementById('pUsername').value = '';
+                document.getElementById('pPassword').value = '';
+                document.getElementById('pNote').value = '';
+                document.getElementById('editPasswordId').value = '';
+                document.getElementById('passwordModalTitle').textContent = 'Tambah Password';
+            }
+
+            function editPassword(idx) {
+                const p = passwords[idx];
+                document.getElementById('editPasswordId').value = idx;
+                document.getElementById('pService').value = p.service;
+                document.getElementById('pUsername').value = p.username;
+                document.getElementById('pPassword').value = p.password;
+                document.getElementById('pNote').value = p.note || '';
+                document.getElementById('passwordModalTitle').textContent = 'Edit Password';
+                showModal('passwordModal');
+            }
+
+            function deletePassword(idx) {
+                if (!confirm('Hapus password ini?')) return;
+                passwords.splice(idx, 1);
+                localStorage.setItem('xyz_vault_passwords', JSON.stringify(passwords));
+                renderPasswords();
+                updateStats();
+                showToast('🗑️ Password dihapus!');
+            }
+
+            function viewPassword(idx) {
+                const p = passwords[idx];
+                showToast('🔑 ' + p.password);
+            }
+
+            // ==========================================================
+            // NOTE FUNCTIONS
+            // ==========================================================
+            function saveNote() {
+                const title = document.getElementById('nTitle').value.trim();
+                const content = document.getElementById('nContent').value.trim();
+                const editId = document.getElementById('editNoteId').value;
+
+                if (!title || !content) {
+                    showToast('⚠️ Judul dan isi wajib diisi!');
+                    return;
+                }
+
+                if (editId) {
+                    const idx = parseInt(editId);
+                    notes[idx] = { title, content };
+                    showToast('✅ Catatan berhasil diupdate!');
+                } else {
+                    notes.push({ title, content });
+                    showToast('✅ Catatan berhasil disimpan!');
+                }
+
+                localStorage.setItem('xyz_vault_notes', JSON.stringify(notes));
+                hideModal('noteModal');
+                resetNoteForm();
+                renderNotes();
+                updateStats();
+            }
+
+            function resetNoteForm() {
+                document.getElementById('nTitle').value = '';
+                document.getElementById('nContent').value = '';
+                document.getElementById('editNoteId').value = '';
+                document.getElementById('noteModalTitle').textContent = 'Tambah Catatan';
+            }
+
+            function editNote(idx) {
+                const n = notes[idx];
+                document.getElementById('editNoteId').value = idx;
+                document.getElementById('nTitle').value = n.title;
+                document.getElementById('nContent').value = n.content;
+                document.getElementById('noteModalTitle').textContent = 'Edit Catatan';
+                showModal('noteModal');
+            }
+
+            function deleteNote(idx) {
+                if (!confirm('Hapus catatan ini?')) return;
+                notes.splice(idx, 1);
+                localStorage.setItem('xyz_vault_notes', JSON.stringify(notes));
+                renderNotes();
+                updateStats();
+                showToast('🗑️ Catatan dihapus!');
+            }
+
+            // ==========================================================
+            // PASSWORD GENERATOR
+            // ==========================================================
+            function generatePassword() {
+                const length = parseInt(document.getElementById('passLength').value) || 16;
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=';
+                let password = '';
+                for (let i = 0; i < length; i++) {
+                    password += chars[Math.floor(Math.random() * chars.length)];
+                }
+                document.getElementById('generatedPassword').value = password;
+            }
+
+            function copyPassword() {
+                const pass = document.getElementById('generatedPassword').value;
+                if (!pass) {
+                    showToast('⚠️ Generate password terlebih dahulu!');
+                    return;
+                }
+                navigator.clipboard.writeText(pass).then(() => {
+                    showToast('📋 Password disalin!');
+                }).catch(() => {
+                    // Fallback
+                    const input = document.createElement('input');
+                    input.value = pass;
+                    document.body.appendChild(input);
+                    input.select();
+                    document.execCommand('copy');
+                    input.remove();
+                    showToast('📋 Password disalin!');
+                });
+            }
+
+            // ==========================================================
+            // PIN CHANGE
+            // ==========================================================
+            function changePin() {
+                const oldPin = document.getElementById('oldPin').value;
+                const newPin = document.getElementById('newPin').value;
+                const confirmPin = document.getElementById('confirmPin').value;
+
+                if (!oldPin || !newPin || !confirmPin) {
+                    showToast('⚠️ Semua field harus diisi!');
+                    return;
+                }
+
+                if (oldPin !== currentPin) {
+                    showToast('❌ PIN lama salah!');
+                    return;
+                }
+
+                if (newPin.length !== 6) {
+                    showToast('⚠️ PIN harus 6 digit!');
+                    return;
+                }
+
+                if (newPin !== confirmPin) {
+                    showToast('❌ PIN baru tidak cocok!');
+                    return;
+                }
+
+                currentPin = newPin;
+                localStorage.setItem('xyz_vault_pin', currentPin);
+                hideModal('changePinModal');
+                document.getElementById('oldPin').value = '';
+                document.getElementById('newPin').value = '';
+                document.getElementById('confirmPin').value = '';
+                showToast('✅ PIN berhasil diubah!');
+            }
+
+            // ==========================================================
+            // DATA EXPORT / IMPORT
+            // ==========================================================
+            function exportData() {
+                const data = {
+                    version: '1.0.0',
+                    exportedAt: new Date().toISOString(),
+                    app: APP_NAME,
+                    passwords: passwords,
+                    notes: notes
+                };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `xyz_vault_backup_${new Date().toISOString().slice(0,10)}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('📤 Data berhasil diexport!');
+            }
+
+            function importData(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.passwords && data.notes) {
+                            if (confirm('⚠️ Import data akan MENGGANTI semua data yang ada. Lanjutkan?')) {
+                                passwords = data.passwords;
+                                notes = data.notes;
+                                localStorage.setItem('xyz_vault_passwords', JSON.stringify(passwords));
+                                localStorage.setItem('xyz_vault_notes', JSON.stringify(notes));
+                                renderAll();
+                                showToast('📥 Data berhasil diimport!');
+                            }
+                        } else {
+                            showToast('❌ File tidak valid!');
+                        }
+                    } catch (err) {
+                        showToast('❌ Error: File tidak valid!');
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            }
+
+            // ==========================================================
+            // UTILITY
+            // ==========================================================
+            function escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            function togglePass(id) {
+                const input = document.getElementById(id);
+                input.type = input.type === 'password' ? 'text' : 'password';
+            }
+
+            // ==========================================================
+            // EVENT LISTENERS
+            // ==========================================================
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const page = this.dataset.page;
+                    if (page) navigateTo(page);
+                });
+            });
+
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+
+            // Auto generate password on load
+            setTimeout(generatePassword, 500);
+
+            // ==========================================================
+            // EXPOSE GLOBALS
+            // ==========================================================
+            window.navigateTo = navigateTo;
+            window.showModal = showModal;
+            window.hideModal = hideModal;
+            window.savePassword = savePassword;
+            window.editPassword = editPassword;
+            window.deletePassword = deletePassword;
+            window.viewPassword = viewPassword;
+            window.saveNote = saveNote;
+            window.editNote = editNote;
+            window.deleteNote = deleteNote;
+            window.generatePassword = generatePassword;
+            window.copyPassword = copyPassword;
+            window.changePin = changePin;
+            window.exportData = exportData;
+            window.importData = importData;
+            window.togglePass = togglePass;
+            window.logout = logout;
+            window.showToast = showToast;
+
+            // ==========================================================
+            // START
+            // ==========================================================
+            showSplash();
+
+            console.log('🔐 ' + APP_NAME + ' loaded');
+            console.log('📱 Personal Cyber Locker');
+            console.log('🖼️ Logo: ' + LOGO_URL);
+            console.log('📦 ' + passwords.length + ' passwords, ' + notes.length + ' notes');
+            console.log('🌐 Offline ready: ' + (navigator.onLine ? 'Online' : 'Offline'));
+
+        })();
+    </script>
+
+</body>
+</html>
